@@ -1,0 +1,33 @@
+This is yet another way of generating JSON from scala objects in a more type safe manner. 
+
+The JSON generation is driven by a configurable JsonBuilder that uses JsonFactory objects to convert objects to Json. 
+
+val json = new JsonBuilder().build (some_scala_object)
+
+The JsonBuilder handles the conversion of primitives, String, and Collections.
+
+For other custom classes, two JsonFactories are provided and may be enough in most circumstances to produce Json from Scala objects. The first one, uses reflection to generate a Json object property for each no-argument method that returns any value, excluding methods from the Object class (toString, hashCode, etc.). 
+
+import org.scala2json.JsonBuilder._
+
+class Foo(val name:String, val size:Int, val bar:Bar)
+
+class Bar(val id:String, val value:Boolean)
+
+val json = new JsonBuilder().using(allFieldsOf[Foo]).using(allFieldsOf[Bar]).build(foosAndBars)
+
+
+The second factory, allows the selection of specific fields or methods.
+
+val json = new JsonBuilder()
+.using(selectedFieldsOf[Foo](f=>(f.name, f.bar)))
+.using(allFieldsOf[Bar]).build(foosAndBars)
+
+The resulting json object can then be printed:
+
+json.print(new StringWriter())
+
+
+ 
+
+
