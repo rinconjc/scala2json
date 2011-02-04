@@ -19,7 +19,6 @@ object ProxyUtils{
     
     class SimpleInterceptor(var target:AnyRef, var results: collection.mutable.Map[String,Any]) extends MethodInterceptor{
         def intercept(obj:Object, method:Method, args:Array[AnyRef], proxyMethod:MethodProxy):AnyRef={
-            println("intercepting " + method.getName)
             if(target!=null){
                 val value = proxyMethod.invoke(target, args)
                 results+=((method.getName,value))

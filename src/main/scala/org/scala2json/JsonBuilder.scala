@@ -2,13 +2,11 @@ package org.scala2json
 
 import java.io.Writer
 import scala.collection.JavaConversions._
-
+import java.util.Date
+import java.text.SimpleDateFormat
 
 trait JsonFactory[T] extends Function2[T,JsonBuilder,Json]
 
-/**
-* 
-*/
 object JsonBuilder{
     
     val blacklist = List("toString","hashCode","getClass")
@@ -33,13 +31,17 @@ object JsonBuilder{
             JsonObject(callback.results.map{e=>(e._1, builder.build(e._2))})
             }
         }
-    }     
+    }
+    
+    def datesWithFormat(fmt:String)=new JsonFactory[Date]{
+        def apply(date:Date, builder:JsonBuilder)=JsonString(new SimpleDateFormat(fmt).format(date))
+    }
     
 }
 
 class JsonBuilder{
     
-    val factories = collection.mutable.Map[Class[_], JsonFactory[_]]()
+    private val factories = collection.mutable.Map[Class[_], JsonFactory[_]]()
     
     def using[T](factory:JsonFactory[T])(implicit m:Manifest[T])={
         factories+=((m.erasure, factory))
@@ -49,13 +51,15 @@ class JsonBuilder{
     def build[T](target:T):Json=target match{
         case map:Map[_,_]=>JsonObject(map.map(e=>(e._1.toString, build(e._2))))
         case traversable:Traversable[_]=>JsonArray(traversable.toSeq.map(build(_)))
+        case array:Array[_]=>JsonArray(array.toSeq.map(build(_)))
         case null => JsonNull
         case num:Number=>JsonNumber(num)
         case b:Boolean=>JsonBool(b)
         case s:String => JsonString(s)
-        case x:AnyRef => { val factory = factories(x.getClass).asInstanceOf[JsonFactory[AnyRef]]
-            factory(x,this)
-        }
+        case x:AnyRef if(factories.contains(x.getClass)) => { val factory = factories(x.getClass).asInstanceOf[JsonFactory[AnyRef]]
+                factory(x,this)
+            }
+        case y => JsonString(y.toString) //fallback if no factory defined for this class
     }
     
     def print[T](target:T, writer:Writer)={

@@ -39,10 +39,10 @@ case class JsonObject(attributes:collection.Map[String,Json]) extends Json{
         val attrs = attributes.toSeq
         if(!attrs.isEmpty){
             val (name,value) = attrs.head
-            writer.write(name+":")
+            writer.write("\""+name+"\":")
             value.print(writer)
             attrs.tail.foreach{(e) =>
-                writer.write("," + e._1+":")
+                writer.write(",\"" + e._1+"\":")
                 e._2.print(writer)                
             }            
         }

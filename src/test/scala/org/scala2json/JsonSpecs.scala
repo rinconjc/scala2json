@@ -4,7 +4,7 @@ import org.specs._
 import java.io.StringWriter
 
 object JsonSpecs extends Specification{
-    "Json Classes " should {
+    "Json" should {
         "print correctly" in{
             val writer = new StringWriter()
             JsonObject(
@@ -14,7 +14,7 @@ object JsonSpecs extends Specification{
                         Map("field2"->JsonObject(
                             Map("field3"->JsonString("value3")))))))
                     .print(writer)
-                    writer.toString must beEqualTo("""{field:"string",array:[10,true],object:{field2:{field3:"value3"}}}""")
+                    writer.toString must beEqualTo("""{"field":"string","array":[10,true],"object":{"field2":{"field3":"value3"}}}""")
             
         }
     }
